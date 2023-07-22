@@ -5,24 +5,101 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>health</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
 </head>
 
 <body>
-    <div id="app">
+    <div id="app" style="margin: auto; width: 1300px; background-color: #eeeeee;">
+
         {{value}}
+        {{date}}
+        <el-row>
+            <el-button v-on:click="test">默认按钮</el-button>
+        </el-row>
+        <!-- 时间选择器 -->
+        <div class="block" style="margin: auto; width: 200px;">
+            <el-date-picker v-model="date" type="date" placeholder="选择日期" value-format="yyyy-MM-dd">
+            </el-date-picker>
+        </div>
+        <!-- 基础数据表格 -->
+        <el-table :data="basicData" style="width: 100%">
+            <el-table-column prop="kg" label="体重">
+            </el-table-column>
+            <el-table-column prop="height" label="身高">
+            </el-table-column>
+            <el-table-column prop="age" label="年龄">
+            </el-table-column>
+            <el-table-column prop="didNeedWaterNum" label="还需摄入水量（ml）">
+            </el-table-column>
+            <el-table-column prop="dateNum" label="每瓶水量（ml）">
+            </el-table-column>
+            <el-table-column prop="needEatNum" label="需服丹药数量（个）">
+            </el-table-column>
+            <el-table-column prop="tanshuiDayNeed" label="每天需摄入碳水（g）">
+            </el-table-column>
+            <el-table-column prop="needKcal" label="每日需摄入热量（Kcal）">
+            </el-table-column>
+            <el-table-column prop="needDanbaizhi" label="每日摄入蛋白质（g）">
+            </el-table-column>
+            <el-table-column prop="needZhifang" label="每日摄入脂肪（g）">
+            </el-table-column>
+        </el-table>
+
+
     </div>
-    <button id="btn1">test</button>
     <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14"></script>
-    <script src="jquery-3.5.1.min.js"></script>
-    <script src="index.js"></script>
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
     <script>
         new Vue({
             el: "#app",
             data() {
                 return {
-                    value: 'Hello world'
+                    date: '',
+                    value: 'Hello world',
+                    basicData: []
                 };
             },
+            methods: {
+                test: function (e) {
+                    if (localStorage.getItem("test") == null) {
+                        localStorage.setItem("test", "Hello world Test");
+                    } else {
+                        this.value = localStorage.getItem("test")
+                    }
+
+                    var v = JSON.parse(localStorage.getItem("basic"))
+                    alert(v.didNeedWaterNum + "-" + v.tanshuiDayNeed)
+                }
+            },
+            created: function () {
+                //初始化数据
+                //基础数据
+                var basic = {
+                    "kg": 68.5,
+                    "height": 165,
+                    "sex": "男",
+                    "age": 27,
+                    "didNeedWaterNum": 0,
+                    "tanshuiDayNeed": 0,
+                    "dateNum": 300,
+                    "needEatNum": 2,
+                    "needKcal": 0,
+                    "needTanshui": 0,
+                    "needDanbaizhi": 137,
+                    "needZhifang": 54.8
+                }
+                basic.didNeedWaterNum = basic.kg * 30
+                basic.tanshuiDayNeed = basic.kg * 2.5
+                basic.needKcal = (66.5 + 13.8 * basic.kg + 5 * basic.height - 6.8 * basic.age).toFixed(2)
+                basic.needDanbaizhi = basic.kg * 2
+                basic.needZhifang = (basic.kg * 0.8).toFixed(2)
+                localStorage.setItem("basic", JSON.stringify(basic));
+                this.basicData = [basic]
+                //水数据
+
+            }
         })
     </script>
 </body>
