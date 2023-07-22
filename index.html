@@ -11,15 +11,13 @@
 
 <body>
     <div id="app" style="margin: auto; width: 1300px; background-color: #eeeeee;">
-
-        {{value}}
-        {{date}}
         <el-row>
             <el-button v-on:click="test">默认按钮</el-button>
         </el-row>
         <!-- 时间选择器 -->
         <div class="block" style="margin: auto; width: 200px;">
-            <el-date-picker v-model="date" type="date" placeholder="选择日期" value-format="yyyy-MM-dd">
+            <el-date-picker v-model="date" @change="dateChange" type="date" placeholder="选择日期"
+                value-format="yyyy-MM-dd">
             </el-date-picker>
         </div>
         <!-- 基础数据表格 -->
@@ -45,10 +43,31 @@
             <el-table-column prop="needZhifang" label="每日摄入脂肪（g）">
             </el-table-column>
         </el-table>
-
+        <!-- 水数据表格 -->
+        <el-table :data="waterData" style="width: 100%">
+            <el-table-column prop="didWaterBolNum" label="已喝瓶数" width="200">
+                <template slot-scope="scopeNum">
+                    <el-input-number v-model="scopeNum.row.didWaterBolNum" @change="waterChange(scopeNum.row)" :min="0"
+                        :max="20">
+                    </el-input-number>
+                </template>
+            </el-table-column>
+            <el-table-column prop="dateNum" label="每瓶水量（ml）">
+            </el-table-column>
+            <el-table-column prop="didWaterNum" label="已摄入水量（ml）">
+            </el-table-column>
+            <el-table-column prop="needWaterNum" label="需摄入水量（ml）">
+            </el-table-column>
+            <el-table-column prop="didNeedWaterNum" label="还需摄入水量（ml）">
+            </el-table-column>
+            <el-table-column prop="didNeedWaterBolNum" label="还需摄入水量瓶数">
+            </el-table-column>
+            <el-table-column prop="date" label="日期">
+            </el-table-column>
+        </el-table>
 
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14"></script>
+    <script src="vue.js"></script>
     <!-- 引入组件库 -->
     <script src="https://unpkg.com/element-ui/lib/index.js"></script>
     <script>
@@ -57,24 +76,117 @@
             data() {
                 return {
                     date: '',
-                    value: 'Hello world',
-                    basicData: []
+                    basicData: [],
+                    waterData: []
                 };
             },
             methods: {
                 test: function (e) {
-                    if (localStorage.getItem("test") == null) {
-                        localStorage.setItem("test", "Hello world Test");
-                    } else {
-                        this.value = localStorage.getItem("test")
+                    var water = JSON.parse(localStorage.getItem("water"))
+                    console.log(water)
+                    // var water = [{
+                    //     "dateNum": 300,
+                    //     "didWaterBolNum": 1,
+                    //     "didWaterNum": 0,
+                    //     "needWaterNum": 2055,
+                    //     "didNeedWaterNum": 0,
+                    //     "didNeedWaterBolNum": 0,
+                    //     "date": '2023-07-20'
+                    // }, {
+                    //     "dateNum": 300,
+                    //     "didWaterBolNum": 1,
+                    //     "didWaterNum": 0,
+                    //     "needWaterNum": 2055,
+                    //     "didNeedWaterNum": 0,
+                    //     "didNeedWaterBolNum": 0,
+                    //     "date": '2023-07-18'
+                    // }]
+                    // const b = water.filter((w) => { return w.date == '2023-07-18' })
+                    // console.log(b)
+                    // console.log(water.length)
+                },
+                dateChange(date) {
+                    console.log(date)
+                    //选择日期后
+                    if (date == null) {
+                        this.waterData = []
+                        return
                     }
+                    //查询水数据
+                    var water = JSON.parse(localStorage.getItem("water"))
+                    var basic = JSON.parse(localStorage.getItem("basic"))
+                    //没有对应水数据 创建
 
-                    var v = JSON.parse(localStorage.getItem("basic"))
-                    alert(v.didNeedWaterNum + "-" + v.tanshuiDayNeed)
-                }
+                    if (water == null) {
+                        water = [{
+                            "dateNum": 300,
+                            "didWaterBolNum": 0,
+                            "didWaterNum": 0,
+                            "needWaterNum": 2055,
+                            "didNeedWaterNum": 2055,
+                            "didNeedWaterBolNum": 0,
+                            "date": date
+                        }]
+                        water[0].dateNum = basic.dateNum
+                        water[0].needWaterNum = basic.didNeedWaterNum
+                        water[0].didNeedWaterNum = basic.didNeedWaterNum
+                        water[0].didNeedWaterBolNum = (basic.didNeedWaterNum / basic.dateNum).toFixed(2)
+
+                        localStorage.setItem("water", JSON.stringify(water));
+                        this.waterData = water.filter((w) => { return w.date == date })
+                        return
+                    }
+                    //没有对应 日期 水数据 创建
+                    const b = water.filter((w) => { return w.date == date })
+                    console.log(b)
+                    if (b[0] == null) {
+                        const num = water.length
+                        console.log(num)
+                        water[num] = {
+                            "dateNum": 300,
+                            "didWaterBolNum": 0,
+                            "didWaterNum": 0,
+                            "needWaterNum": 2055,
+                            "didNeedWaterNum": 0,
+                            "didNeedWaterBolNum": 0,
+                            "date": date
+                        }
+                        water[num].dateNum = basic.dateNum
+                        water[num].needWaterNum = basic.didNeedWaterNum
+                        water[num].didNeedWaterNum = basic.didNeedWaterNum
+                        water[num].didNeedWaterBolNum = (basic.didNeedWaterNum / basic.dateNum).toFixed(2)
+
+                        localStorage.setItem("water", JSON.stringify(water));
+                        this.waterData = water.filter((w) => { return w.date == date })
+                        return
+                    }
+                    this.waterData = water.filter((w) => { return w.date == date })
+                },
+                waterChange(row) {
+                    // "已摄入水量（ml）
+                    row.didWaterNum = row.didWaterBolNum * row.dateNum
+                    // 还需摄入水量（ml)
+                    row.didNeedWaterNum = row.needWaterNum - row.didWaterNum
+                    // 还需摄入水量瓶数
+                    row.didNeedWaterBolNum = row.didNeedWaterNum / row.dateNum
+
+                    // if (row.didNeedWaterNum <= 0) row.didNeedWaterNum = 0
+                    // if (row.didNeedWaterBolNum <= 0) row.didNeedWaterBolNum = 0
+
+                    //存入localStorage
+                    var water = JSON.parse(localStorage.getItem("water"))
+                    var b = water.filter((w) => { return w.date == row.date })
+                    b[0].didWaterNum = row.didWaterNum
+                    b[0].didNeedWaterNum = row.didNeedWaterNum
+                    b[0].didNeedWaterBolNum = row.didNeedWaterBolNum
+                    water.map((m) => { if (m.date == row.date) m = b[0] })
+                    localStorage.setItem("water", JSON.stringify(water));
+                },
+
             },
             created: function () {
                 //初始化数据
+                localStorage.clear()
                 //基础数据
                 var basic = {
                     "kg": 68.5,
@@ -97,7 +209,6 @@
                 basic.needZhifang = (basic.kg * 0.8).toFixed(2)
                 localStorage.setItem("basic", JSON.stringify(basic));
                 this.basicData = [basic]
-                //水数据
 
             }
         })
